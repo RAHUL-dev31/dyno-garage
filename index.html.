@@ -1,0 +1,260 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#101114">
+<title>Dyno Garage</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#0c0d10;color:#f4f5f7;font-family:Arial,sans-serif}
+header{padding:20px;background:#15171c;border-bottom:1px solid #30343e}
+h1{margin:0;color:#ff6b18;font-size:25px}
+p{color:#a6adba;line-height:1.5}
+main{padding:14px;max-width:700px;margin:auto;padding-bottom:100px}
+.card{background:#17191f;border:1px solid #30343e;border-radius:16px;padding:16px;margin-bottom:14px}
+h2{font-size:17px;margin-top:0}
+button,select{background:#252932;color:white;border:1px solid #454b57;padding:12px;border-radius:10px;font-size:14px}
+button:active{transform:scale(.98)}
+.primary{background:#ff6b18;color:#170d07;font-weight:bold;border:0}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.grid button{width:100%}
+.car{height:180px;display:flex;align-items:center;justify-content:center;
+background:radial-gradient(ellipse,#343945,#111318);border-radius:12px}
+.car svg{width:100%;max-width:430px}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.stat{background:#101216;border:1px solid #30343e;padding:13px;border-radius:12px}
+.value{font-size:28px;font-weight:bold;color:#ff8b42}
+.label{font-size:11px;color:#9ba3b0;margin-top:5px}
+.bar{height:5px;background:#30343e;margin-top:9px;border-radius:5px;overflow:hidden}
+.bar div{height:100%;width:0;background:#ff6b18}
+nav{position:fixed;bottom:0;left:0;right:0;display:flex;gap:10px;
+padding:12px;background:#101114;border-top:1px solid #30343e}
+nav button{flex:1}
+.page{display:none}.page.active{display:block}
+small{color:#a6adba}
+.cost{display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px solid #30343e}
+canvas{width:100%;height:150px;background:#101216;border-radius:10px}
+</style>
+</head>
+<body>
+<header>
+  <h1>DYNO GARAGE</h1>
+  <small>VIRTUAL PERFORMANCE LAB · SIMULATION MODE</small>
+</header>
+
+<main>
+<section id="garage" class="page active">
+  <div class="card">
+    <h2>Your Garage</h2>
+    <p>Choose a car to explore its simulated performance.</p>
+    <div class="car">
+      <svg viewBox="0 0 420 180" role="img" aria-label="Illustrated sports car">
+        <ellipse cx="210" cy="143" rx="160" ry="12" fill="#000"/>
+        <path id="body" d="M38 126 L54 99 L110 87 L150 52 L257 54 L305 88 L366 103 L389 126 L375 139 L48 139Z" fill="#f05a12" stroke="#ffae78" stroke-width="2"/>
+        <path d="M119 85 L156 58 L205 60 L205 86Z" fill="#89abc0" stroke="#222" stroke-width="4"/>
+        <path d="M215 60 L254 61 L292 87 L215 87Z" fill="#65869b" stroke="#222" stroke-width="4"/>
+        <path d="M53 105 L96 99 L91 110 L55 115Z" fill="#fff4d4"/>
+        <path d="M347 105 L377 114 L380 120 L350 117Z" fill="#ff3030"/>
+        <g fill="#08090c" stroke="#737b89" stroke-width="4">
+          <circle cx="115" cy="136" r="25"/><circle cx="325" cy="136" r="25"/>
+        </g>
+        <g fill="#b6bec9">
+          <circle cx="115" cy="136" r="13"/><circle cx="325" cy="136" r="13"/>
+        </g>
+        <g stroke="#444b57" stroke-width="3">
+          <path d="M115 124V148 M103 136H127 M325 124V148 M313 136H337"/>
+        </g>
+      </svg>
+    </div>
+    <h2 id="carName">Honda Civic Type R</h2>
+    <p id="carDesc">Sport compact · Illustrative model</p>
+    <div class="grid">
+      <button onclick="choose(0)">Honda Civic Type R</button>
+      <button onclick="choose(1)">BMW M4</button>
+      <button onclick="choose(2)">Porsche 911 GT3 RS</button>
+      <button onclick="choose(3)">Dodge Challenger</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Simulated specifications</h2>
+    <div class="stats">
+      <div class="stat"><div class="value" id="carHP">315</div><div class="label">HORSEPOWER · HP</div></div>
+      <div class="stat"><div class="value" id="carTQ">310</div><div class="label">TORQUE · LB-FT</div></div>
+    </div>
+    <br><button class="primary" onclick="page('dyno')">Open Dyno Lab →</button>
+  </div>
+</section>
+
+<section id="dyno" class="page">
+  <div class="card">
+    <h2>Engine Dyno</h2>
+    <p id="dynoName">Honda Civic Type R</p>
+    <div class="stats">
+      <div class="stat"><div class="value" id="rpm">850</div><div class="label">RPM</div><div class="bar"><div id="rpmBar"></div></div></div>
+      <div class="stat"><div class="value" id="hp">0</div><div class="label">HORSEPOWER</div><div class="bar"><div id="hpBar"></div></div></div>
+      <div class="stat"><div class="value" id="tq">0</div><div class="label">TORQUE LB-FT</div><div class="bar"><div id="tqBar"></div></div></div>
+      <div class="stat"><div class="value" id="gear">N</div><div class="label">SIMULATED GEAR</div></div>
+    </div>
+    <br>
+    <label for="mode">Dyno mode</label><br><br>
+    <select id="mode"><option value="5">Street pull</option><option value="7">Sport pull</option><option value="9">Track pull</option></select>
+    <br><br>
+    <button class="primary" onclick="start()">▶ Start pull</button>
+    <button onclick="stop()">■ Stop / Reset</button>
+  </div>
+
+  <div class="card">
+    <h2>Engine Audio</h2>
+    <p>Audio starts only when you press the button.</p>
+    <button class="primary" onclick="sound()">🔊 Enable engine sound</button>
+    <button onclick="flutter()">Turbo flutter</button>
+    <button onclick="mute()">Mute</button>
+    <p><small>Engine-like synthesised sound; not a real car recording.</small></p>
+  </div>
+
+  <div class="card">
+    <h2>Performance graph</h2>
+    <canvas id="chart" width="600" height="220"></canvas>
+    <p id="result">Start a pull to see simulated results.</p>
+  </div>
+</section>
+
+<section id="costs" class="page">
+  <div class="card">
+    <h2>Project Costs</h2>
+    <div class="cost"><span>HTML / CSS / JavaScript</span><b>₹0</b></div>
+    <div class="cost"><span>GitHub repository</span><b>₹0</b></div>
+    <div class="cost"><span>GitHub Pages hosting</span><b>₹0*</b></div>
+    <div class="cost"><span>Built-in simulated sound</span><b>₹0</b></div>
+    <div class="cost"><span>Optional custom domain</span><b>Not required</b></div>
+    <br>
+    <p>*Free hosting is subject to GitHub's plan and usage limits. Mobile data may cost money. Future real car models may have licensing restrictions.</p>
+    <p><b>Current planned budget: ₹0</b></p>
+  </div>
+</section>
+</main>
+
+<nav>
+  <button onclick="page('garage')">🚘 Garage</button>
+  <button onclick="page('dyno')">◉ Dyno</button>
+  <button onclick="page('costs')">₹ Costs</button>
+</nav>
+
+<script>
+const cars=[
+ {name:"Honda Civic Type R",hp:315,tq:310,color:"#f05a12"},
+ {name:"BMW M4",hp:473,tq:406,color:"#2777e7"},
+ {name:"Porsche 911 GT3 RS",hp:518,tq:342,color:"#e6c72b"},
+ {name:"Dodge Challenger",hp:485,tq:475,color:"#a847e8"}
+];
+let selected=0,running=false,frame=0,startTime=0,audio=null;
+function page(id){
+ document.querySelectorAll(".page").forEach(x=>x.classList.remove("active"));
+ document.getElementById(id).classList.add("active");
+ if(id==="dyno")draw();
+}
+function choose(i){
+ selected=i;
+ const c=cars[i];
+ document.getElementById("carName").textContent=c.name;
+ document.getElementById("dynoName").textContent=c.name;
+ document.getElementById("carHP").textContent=c.hp;
+ document.getElementById("carTQ").textContent=c.tq;
+ document.getElementById("body").setAttribute("fill",c.color);
+ reset();
+}
+function reset(){
+ running=false;cancelAnimationFrame(frame);
+ ["hp","tq"].forEach(id=>document.getElementById(id).textContent="0");
+ document.getElementById("rpm").textContent="850";
+ document.getElementById("gear").textContent="N";
+ ["rpmBar","hpBar","tqBar"].forEach(id=>document.getElementById(id).style.width="0%");
+ draw();
+}
+function start(){
+ if(running)return;
+ running=true;startTime=performance.now();tick();
+}
+function stop(){
+ running=false;cancelAnimationFrame(frame);reset();
+ document.getElementById("result").textContent="Run stopped. Values are simulated.";
+}
+function tick(){
+ if(!running)return;
+ const c=cars[selected],elapsed=(performance.now()-startTime)/1000;
+ const duration=Number(document.getElementById("mode").value);
+ const p=Math.min(elapsed/duration,1),rpm=850+(c.hp>0?6500:0)*p;
+ const hp=Math.round(c.hp*Math.pow(p,.8));
+ const tq=Math.round(c.tq*(.6+.4*Math.sin(p*2)));
+ document.getElementById("rpm").textContent=Math.round(rpm).toLocaleString();
+ document.getElementById("hp").textContent=hp;
+ document.getElementById("tq").textContent=tq;
+ document.getElementById("gear").textContent=Math.min(5,Math.floor(p*5)+1);
+ document.getElementById("rpmBar").style.width=(p*100)+"%";
+ document.getElementById("hpBar").style.width=(hp/c.hp*100)+"%";
+ document.getElementById("tqBar").style.width=(tq/c.tq*100)+"%";
+ draw(p);
+ if(p>=1){
+  running=false;
+  document.getElementById("result").textContent="Simulated result: "+c.hp+" HP peak. Not real measured performance.";
+  return;
+ }
+ frame=requestAnimationFrame(tick);
+}
+function draw(p=0){
+ const cv=document.getElementById("chart"),ctx=cv.getContext("2d");
+ ctx.clearRect(0,0,cv.width,cv.height);
+ ctx.strokeStyle="#343945";
+ for(let y=30;y<220;y+=40){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(600,y);ctx.stroke()}
+ ctx.strokeStyle="#ff6b18";ctx.lineWidth=4;ctx.beginPath();
+ for(let x=0;x<600;x+=5){
+  const n=x/600;
+  const y=195-Math.pow(n,.8)*150;
+  if(x===0)ctx.moveTo(x,y);else ctx.lineTo(x,y);
+ }
+ ctx.stroke();
+ ctx.fillStyle="#a6adba";ctx.font="14px Arial";ctx.fillText("SIMULATED POWER CURVE",12,20);
+}
+function sound(){
+ try{
+  const AC=window.AudioContext||window.webkitAudioContext;
+  if(!AC){alert("Audio is not supported in this browser.");return}
+  if(!audio){
+   audio=new AC();
+   const o=audio.createOscillator(),g=audio.createGain();
+   o.type="sawtooth";o.frequency.value=65;g.gain.value=.025;
+   o.connect(g);g.connect(audio.destination);o.start();
+   audio.osc=o;audio.gain=g;
+  }
+  audio.resume();audio.gain.gain.setTargetAtTime(.025,audio.currentTime,.1);
+  audio.osc.frequency.setTargetAtTime(100,audio.currentTime,.1);
+ }catch(e){alert("Could not start audio. Try Chrome.")}
+}
+function flutter(){
+ try{
+  const AC=window.AudioContext||window.webkitAudioContext;
+  if(!AC)return;
+  const a=new AC(),now=a.currentTime;
+  for(let i=0;i<3;i++){
+   const o=a.createOscillator(),g=a.createGain();
+   o.type="triangle";
+   o.frequency.setValueAtTime(420-i*90,now+i*.11);
+   o.frequency.exponentialRampToValueAtTime(130,now+i*.11+.08);
+   g.gain.setValueAtTime(.0001,now+i*.11);
+   g.gain.exponentialRampToValueAtTime(.05,now+i*.11+.01);
+   g.gain.exponentialRampToValueAtTime(.0001,now+i*.11+.09);
+   o.connect(g);g.connect(a.destination);
+   o.start(now+i*.11);o.stop(now+i*.11+.1);
+  }
+ }catch(e){}
+}
+function mute(){
+ if(audio)audio.gain.gain.setTargetAtTime(0,audio.currentTime,.05);
+}
+draw();
+</script>
+</body>
+</html>
